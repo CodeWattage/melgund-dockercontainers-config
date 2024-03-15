@@ -1,0 +1,22 @@
+http:
+  middlewares:
+    crowdsec-bouncer:
+      forwardauth:
+        address: http://bouncer-traefik:8080/api/v1/forwardAuth
+        trustForwardHeader: true
+
+  routers:
+    homeassistant-router:
+      rule: "Host(`homeassistant.watt.cloud`)"
+      service: homeassistant-service
+      entryPoints: ["https"]
+      middlewares:
+        - crowdsec-bouncer
+      tls:
+        certResolver: cloudflare  # Assuming you want to use HTTPS with Cloudflare certificates
+
+  services:
+    homeassistant-service:
+      loadBalancer:
+        servers:
+          - url: "http://homeassistant.local:8123"
